@@ -1,0 +1,739 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Dokumen Desain Arsitektur Sistem - hPanel (Hostinger/Niagahoster)</title>
+    <style>
+        :root {
+            --primary-color: #1a252f; /* Dark Navy */
+            --secondary-color: #2c3e50;
+            --accent-color: #3498db;
+            --text-color: #333333;
+            --light-bg: #f8f9fa;
+            --border-color: #e2e8f0;
+            --danger-color: #e74c3c;
+            --success-color: #2ecc71;
+        }
+        
+        body {
+            font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif;
+            margin: 0;
+            padding: 0;
+            background-color: #edf2f7;
+            color: var(--text-color);
+            line-height: 1.6;
+        }
+
+        .document-container {
+            max-width: 1200px;
+            margin: 40px auto;
+            background-color: white;
+            padding: 50px 60px;
+            box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06);
+            border-top: 8px solid var(--secondary-color);
+            border-radius: 8px;
+        }
+
+        .header {
+            display: flex;
+            justify-content: space-between;
+            align-items: flex-start;
+            border-bottom: 2px solid var(--border-color);
+            padding-bottom: 25px;
+            margin-bottom: 40px;
+        }
+
+        .header-title h1 {
+            color: var(--primary-color);
+            font-size: 32px;
+            margin: 0 0 12px 0;
+            font-weight: 700;
+            letter-spacing: -0.5px;
+        }
+        
+        .header-title .subtitle {
+            color: #64748b;
+            font-size: 18px;
+            font-weight: 500;
+        }
+
+        .document-control {
+            font-size: 13px;
+            color: #475569;
+            background: var(--light-bg);
+            padding: 15px 20px;
+            border: 1px solid var(--border-color);
+            border-radius: 6px;
+        }
+
+        .document-control table {
+            border-collapse: collapse;
+        }
+
+        .document-control td {
+            padding: 4px 15px 4px 0;
+        }
+
+        .document-control td:first-child {
+            font-weight: 600;
+            color: var(--secondary-color);
+        }
+
+        h2 {
+            color: var(--secondary-color);
+            font-size: 24px;
+            border-bottom: 2px solid var(--light-bg);
+            padding-bottom: 10px;
+            margin-top: 50px;
+            font-weight: 600;
+        }
+
+        h3 {
+            color: var(--secondary-color);
+            font-size: 18px;
+            margin-top: 30px;
+        }
+
+        p {
+            font-size: 15px;
+            color: #475569;
+            text-align: justify;
+            margin-bottom: 16px;
+        }
+
+        .mermaid-container {
+            margin: 40px 0;
+            padding: 30px;
+            background-color: #ffffff;
+            border: 1px solid var(--border-color);
+            border-radius: 8px;
+            text-align: center;
+            box-shadow: inset 0 2px 4px 0 rgba(0, 0, 0, 0.02);
+            overflow-x: auto;
+            position: relative; /* Ditambahkan untuk memposisikan tombol zoom */
+        }
+        
+        .zoom-btn {
+            position: absolute;
+            top: 15px;
+            right: 15px;
+            background-color: var(--accent-color);
+            color: white;
+            border: none;
+            padding: 8px 16px;
+            border-radius: 6px;
+            cursor: pointer;
+            font-size: 13px;
+            font-weight: 600;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+            transition: background-color 0.2s;
+            z-index: 10;
+            display: flex;
+            align-items: center;
+            gap: 6px;
+        }
+
+        .zoom-btn:hover {
+            background-color: #2980b9;
+        }
+
+        .table-responsive {
+            width: 100%;
+            margin-top: 25px;
+            overflow-x: auto;
+        }
+
+        table.formal-table {
+            width: 100%;
+            border-collapse: collapse;
+            font-size: 14px;
+            text-align: left;
+        }
+
+        table.formal-table th, table.formal-table td {
+            border: 1px solid var(--border-color);
+            padding: 14px 16px;
+        }
+
+        table.formal-table th {
+            background-color: var(--light-bg);
+            color: var(--secondary-color);
+            font-weight: 600;
+            text-transform: uppercase;
+            font-size: 12px;
+            letter-spacing: 0.5px;
+        }
+
+        table.formal-table tr:hover {
+            background-color: #f8fafc;
+        }
+        
+        .architecture-notes {
+            background-color: #f0f9ff;
+            border-left: 4px solid var(--accent-color);
+            padding: 15px 20px;
+            margin: 20px 0;
+            border-radius: 0 6px 6px 0;
+        }
+        
+        .architecture-notes p {
+            margin: 0;
+            color: #0369a1;
+            font-size: 14px;
+        }
+
+        /* Table of Contents Styles */
+        .toc-container {
+            background-color: var(--light-bg);
+            border: 1px solid var(--border-color);
+            border-radius: 8px;
+            padding: 20px 25px;
+            margin-bottom: 40px;
+        }
+        .toc-container h3 {
+            margin-top: 0;
+            margin-bottom: 15px;
+            font-size: 16px;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+            color: var(--secondary-color);
+        }
+        .toc-list {
+            list-style: none;
+            padding: 0;
+            margin: 0;
+            display: flex;
+            flex-wrap: wrap;
+            gap: 15px;
+        }
+        .toc-list li {
+            flex: 1 1 45%;
+        }
+        .toc-list a {
+            text-decoration: none;
+            color: var(--accent-color);
+            font-weight: 500;
+            font-size: 14px;
+            display: flex;
+            align-items: center;
+            transition: color 0.2s, transform 0.2s;
+        }
+        .toc-list a::before {
+            content: "→";
+            margin-right: 8px;
+            font-size: 12px;
+            color: #94a3b8;
+        }
+        .toc-list a:hover {
+            color: var(--primary-color);
+            transform: translateX(4px);
+        }
+
+        /* Modal Fullscreen Styles */
+        .diagram-modal {
+            display: none;
+            position: fixed;
+            z-index: 9999;
+            left: 0;
+            top: 0;
+            width: 100%;
+            height: 100%;
+            background-color: rgba(255, 255, 255, 0.98);
+            overflow: auto;
+            backdrop-filter: blur(4px);
+        }
+
+        .diagram-modal.active {
+            display: block;
+        }
+
+        .modal-content {
+            width: 100%;
+            height: 100%;
+            display: block;
+            text-align: center;
+            overflow: auto;
+            padding: 50px 20px;
+            box-sizing: border-box;
+        }
+
+        /* Memaksa SVG untuk membesar di dalam modal */
+        .modal-content svg {
+            width: 100% !important;
+            height: auto !important;
+            min-width: 900px !important;
+            max-width: none !important;
+            margin: 0 auto;
+        }
+
+        .close-btn {
+            position: absolute;
+            top: 20px;
+            right: 30px;
+            color: var(--secondary-color);
+            font-size: 40px;
+            font-weight: bold;
+            cursor: pointer;
+            background: none;
+            border: none;
+            z-index: 10000;
+            transition: color 0.2s;
+        }
+
+        .close-btn:hover {
+            color: var(--danger-color);
+        }
+
+        /* Info Card Styles */
+        .info-card {
+            position: fixed;
+            bottom: -150%;
+            left: 50%;
+            transform: translateX(-50%);
+            width: 400px;
+            max-width: 90%;
+            background: white;
+            box-shadow: 0 15px 35px rgba(0,0,0,0.2);
+            border-radius: 12px;
+            border-top: 5px solid var(--accent-color);
+            padding: 25px;
+            transition: bottom 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+            z-index: 100000;
+            text-align: left;
+        }
+        .info-card.show {
+            bottom: 30px;
+        }
+        .info-card h3 {
+            margin: 0 0 10px 0;
+            color: var(--primary-color);
+            font-size: 20px;
+            padding-right: 25px;
+        }
+        .info-card p {
+            margin: 0;
+            color: #475569;
+            font-size: 15px;
+            line-height: 1.6;
+        }
+        .info-card .close-info {
+            position: absolute;
+            top: 20px;
+            right: 20px;
+            background: var(--light-bg);
+            border: none;
+            width: 30px;
+            height: 30px;
+            border-radius: 50%;
+            font-size: 18px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            cursor: pointer;
+            color: #64748b;
+            transition: all 0.2s;
+        }
+        .info-card .close-info:hover {
+            background: var(--danger-color);
+            color: white;
+        }
+        /* Interactable Nodes */
+        .node { cursor: pointer !important; }
+        .node:hover rect, .node:hover circle, .node:hover polygon {
+            stroke: var(--accent-color) !important;
+            stroke-width: 3px !important;
+            filter: drop-shadow(0 4px 6px rgba(0,0,0,0.1));
+        }
+    </style>
+</head>
+<body>
+
+<div class="document-container">
+    <div class="header">
+        <div class="header-title">
+            <h1>High-Level Architecture (HLA)</h1>
+            <div class="subtitle">Sistem Kontrol Panel: hPanel & Data Ecosystem</div>
+        </div>
+        <div class="document-control">
+            <table>
+                <tr><td>Document ID</td><td>: ARCH-HPANEL-v3.0</td></tr>
+                <tr><td>Revision</td><td>: 3.0 (Masterpiece)</td></tr>
+                <tr><td>Date</td><td>: 9 Mei 2026</td></tr>
+                <tr><td>Status</td><td>: <span style="color: var(--success-color); font-weight: bold;">Approved</span></td></tr>
+                <tr><td>Classification</td><td>: Internal / Confidential</td></tr>
+            </table>
+        </div>
+    </div>
+
+    <div class="toc-container">
+        <h3>📑 Daftar Isi (Table of Contents)</h3>
+        <ul class="toc-list">
+            <li><a href="#summary">1. Executive Summary</a></li>
+            <li><a href="#diagram">2. System Architecture Diagram</a></li>
+            <li><a href="#components">3. Architecture Component Definition</a></li>
+            <li><a href="#principles">4. Design Principles & Justification</a></li>
+        </ul>
+    </div>
+
+    <h2 id="summary">1. Executive Summary</h2>
+    <p>
+        Dokumen ini mendefinisikan arsitektur tingkat tinggi (High-Level Architecture) secara komprehensif untuk sistem hPanel (Hostinger/Niagahoster). Arsitektur ini tidak hanya mencakup aliran data analitik, tetapi juga memetakan infrastruktur inti, lapisan keamanan (Security), *Polyglot Persistence* lanjutan, serta sistem observabilitas (Monitoring) yang mendasari operasional jutaan pengguna di seluruh dunia secara *real-time*.
+    </p>
+
+    <div class="architecture-notes">
+        <p><strong>Pembaruan v3.0 (Masterpiece):</strong> Menambahkan komponen krusial setara tingkat Enterprise nyata, meliputi: DNS & Load Balancer, Centralized Logging (ELK Stack), Cold Storage Backup (Amazon S3), Sistem Penjadwalan (Cron Scheduler), serta alur CI/CD Deployment.</p>
+    </div>
+
+    <h2>2. System Architecture Diagram</h2>
+    <p>
+        Diagram berikut merepresentasikan topologi sistem *end-to-end*, dipisahkan ke dalam domain tanggung jawab yang spesifik (Security, Core Processing, Storage & Infrastructure, Data Pipeline, dan Observability).
+    </p>
+
+    <div class="mermaid-container">
+        <button class="zoom-btn" onclick="openModal()">
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="15 3 21 3 21 9"></polyline><polyline points="9 21 3 21 3 15"></polyline><line x1="21" y1="3" x2="14" y2="10"></line><line x1="3" y1="21" x2="10" y2="14"></line></svg>
+            Perbesar Diagram
+        </button>
+        <div class="mermaid" id="mainMermaid">
+        %%{init: {'theme': 'base', 'themeVariables': { 'primaryColor': '#ffffff', 'primaryBorderColor': '#cbd5e1', 'lineColor': '#475569', 'fontFamily': 'Inter, sans-serif'}}}%%
+        graph TD
+            classDef external fill:#f8fafc,stroke:#94a3b8,stroke-width:2px,color:#0f172a,shape:circle;
+            classDef security fill:#fee2e2,stroke:#ef4444,stroke-width:2px,color:#7f1d1d;
+            classDef core fill:#e0f2fe,stroke:#0ea5e9,stroke-width:2px,color:#0c4a6e;
+            classDef workers fill:#fef3c7,stroke:#f59e0b,stroke-width:2px,color:#78350f;
+            classDef storage fill:#ffffff,stroke:#64748b,stroke-width:2px,color:#0f172a;
+            classDef data fill:#dcfce7,stroke:#22c55e,stroke-width:2px,color:#14532d;
+            classDef observability fill:#f3e8ff,stroke:#a855f7,stroke-width:2px,color:#4c1d95;
+            classDef devops fill:#e2e8f0,stroke:#64748b,stroke-width:2px,color:#0f172a,stroke-dasharray: 5 5;
+
+            User((Client)):::external
+            Admin((Engineer)):::external
+            Dev((Developer)):::external
+
+            subgraph SEC [1. Edge & Security Layer]
+                direction TB
+                DNS[DNS Management<br>Cloudflare/Route53]:::security
+                WAF[WAF & CDN<br>DDoS Protection]:::security
+                LB[Load Balancer<br>NGINX/HAProxy]:::security
+                Gateway[API Gateway<br>Auth & Rate Limit]:::security
+            end
+
+            subgraph CORE [2. Core Processing Layer]
+                direction TB
+                UI[hPanel Frontend<br>React/Vue]:::core
+                API[Core Backend API<br>Microservices]:::core
+                Search[Search Engine<br>Elasticsearch]:::core
+            end
+
+            subgraph ASYNC [3. Asynchronous & Scheduled Operations]
+                direction TB
+                Scheduler[Cron Scheduler<br>Apache Airflow]:::workers
+                TaskBroker[Task Broker<br>RabbitMQ]:::workers
+                Workers[Background Workers<br>Sidekiq/Celery]:::workers
+            end
+
+            subgraph STORAGE [4. Polyglot Storage & Infrastructure]
+                direction TB
+                RDBMS[(Primary DB<br>PostgreSQL/MariaDB)]:::storage
+                Cache[(In-Memory Cache<br>Redis)]:::storage
+                CephFS[(Distributed FS<br>CephFS - Live Files)]:::storage
+                LVE[CloudLinux LVE<br>User Containers]:::storage
+                ColdStorage[(Cold Storage<br>Amazon S3 - Backups)]:::storage
+            end
+
+            subgraph DATA [5. Data Analytics Pipeline]
+                direction TB
+                EventStream[Event Stream<br>Apache Kafka]:::data
+                CDC[Change Data Capture<br>Debezium]:::data
+                OLAP[(Real-time OLAP<br>ClickHouse)]:::data
+                DBT[Data Transformation<br>dbt]:::data
+                DWH[(Data Warehouse<br>Google BigQuery)]:::data
+            end
+
+            subgraph OBS [6. Observability & Logging Layer]
+                direction TB
+                Logging[Centralized Logging<br>ELK Stack / Datadog]:::observability
+                Metrics[Metrics & Traces<br>Prometheus/Grafana]:::observability
+                Alerts[Alerting System<br>PagerDuty/Slack]:::observability
+            end
+
+            subgraph CICD [7. DevOps & Deployment]
+                direction TB
+                GitLab[GitLab CI/CD<br>Pipeline]:::devops
+                K8s[Kubernetes<br>Orchestration]:::devops
+            end
+
+            %% Flows
+            User -->|Domain Lookup| DNS
+            DNS --> WAF
+            WAF --> LB
+            LB --> UI
+            LB --> Gateway
+            Gateway --> API
+
+            %% Core interactions
+            API <-->|Read/Write Fast| Cache
+            API <-->|Sync Queries| RDBMS
+            API <-->|Full-text Search| Search
+
+            %% Async flows
+            Scheduler -->|Trigger Timed Jobs| TaskBroker
+            API -->|Dispatch Jobs| TaskBroker
+            TaskBroker --> Workers
+            Workers -->|CRUD Ops| RDBMS
+            Workers -->|Provisioning/Files| CephFS
+            Workers -->|Config| LVE
+            CephFS --- LVE
+            Workers -.->|Daily/Weekly Backup| ColdStorage
+
+            %% Data Pipeline flows
+            API -->|Publish Events| EventStream
+            RDBMS -.->|Row Changes| CDC
+            CDC -->|Publish Changes| EventStream
+            EventStream -->|High-throughput ingest| OLAP
+            EventStream -->|Raw Data| DBT
+            DBT -->|Clean Models| DWH
+            
+            %% Search Sync
+            CDC -.->|Sync Indexes| Search
+
+            %% Observability flows
+            API -.->|App Logs| Logging
+            Workers -.->|Worker Logs| Logging
+            LVE -.->|System Logs| Logging
+            API -.->|Traces & Metrik| Metrics
+            Logging -.->|Error Match| Alerts
+            Metrics -->|Threshold met| Alerts
+            Alerts --> Admin
+            DWH -->|BI Reports| Admin
+
+            %% DevOps Flows
+            Dev -->|Push Code| GitLab
+            GitLab -->|Deploy Images| K8s
+            K8s -.->|Manage| API
+            K8s -.->|Manage| Workers
+        </div>
+    </div>
+
+    <h2 id="components">3. Architecture Component Definition</h2>
+    <div class="table-responsive">
+        <table class="formal-table">
+            <thead>
+                <tr>
+                    <th>Domain</th>
+                    <th>Komponen Utama</th>
+                    <th>Fungsi Sistem (System Function)</th>
+                </tr>
+            </thead>
+            <tbody>
+                <tr>
+                    <td><strong>Edge & Security Layer</strong></td>
+                    <td>DNS, WAF, Load Balancer, API Gateway</td>
+                    <td>Menangani resolusi domain (Cloudflare DNS), mendistribusikan beban lalu lintas (NGINX), mitigasi serangan DDoS, otentikasi JWT, dan pembatasan laju (Rate Limiting).</td>
+                </tr>
+                <tr>
+                    <td><strong>Core Processing Layer</strong></td>
+                    <td>Backend API, Elasticsearch</td>
+                    <td>Mengeksekusi logika bisnis utama hPanel. <strong>Elasticsearch</strong> terintegrasi untuk pencarian teks penuh berkecepatan tinggi (seperti pencarian aset domain dan basis pengetahuan).</td>
+                </tr>
+                <tr>
+                    <td><strong>Async & Scheduled Ops</strong></td>
+                    <td>Cron Scheduler, RabbitMQ, Workers</td>
+                    <td>Menjalankan proses latar belakang. Ditambahkan <strong>Apache Airflow / Cron</strong> untuk mengeksekusi tugas terjadwal otomatis (contoh: pembuatan tagihan bulanan).</td>
+                </tr>
+                <tr>
+                    <td><strong>Polyglot Storage & Infra</strong></td>
+                    <td>PostgreSQL, Redis, CephFS, LVE, Amazon S3</td>
+                    <td>Sistem persisten hibrida. Dilengkapi <strong>Amazon S3 (Cold Storage)</strong> sebagai repositori backup jangka panjang yang terisolasi dari CephFS utama untuk mitigasi bencana.</td>
+                </tr>
+                <tr>
+                    <td><strong>Data Analytics Pipeline</strong></td>
+                    <td>Kafka, CDC, ClickHouse, BigQuery</td>
+                    <td><strong>Apache Kafka</strong> menangani aliran data analitik bervolume ekstrem. <strong>ClickHouse</strong> menelan metrik server *real-time*, dan <strong>BigQuery</strong> berfungsi sebagai DWH.</td>
+                </tr>
+                <tr>
+                    <td><strong>Observability & Logging</strong></td>
+                    <td>ELK Stack, Prometheus, Grafana, PagerDuty</td>
+                    <td>Sistem pemantauan 360 derajat. <strong>ELK Stack</strong> bertugas melakukan sentralisasi log teks aplikasi, melengkapi metrik Prometheus untuk keperluan investigasi (debugging) *engineer*.</td>
+                </tr>
+                <tr>
+                    <td><strong>DevOps & Deployment</strong></td>
+                    <td>GitLab CI/CD, Kubernetes</td>
+                    <td>Infrastruktur otomatisasi di belakang layar yang memungkinkan para *Developer* untuk merilis pembaruan kode aplikasi (Continuous Deployment) secara aman tanpa *downtime*.</td>
+                </tr>
+            </tbody>
+        </table>
+    </div>
+
+    <h2>4. Design Principles & Justification</h2>
+    <p>
+        Desain ini menganut prinsip <strong>Decoupled Architecture</strong> dan <strong>Polyglot Persistence</strong>. Kelemahan pada arsitektur sebelumnya (Single Point of Failure pada Message Broker) telah diselesaikan dengan memisahkan *Task Broker* (RabbitMQ) untuk operasional dan *Event Stream* (Kafka) untuk analitik. Penambahan blok <strong>Infrastructure (CephFS/LVE)</strong> merefleksikan realitas operasional perusahaan web hosting. Selain itu, lapisan <strong>Security</strong> dan <strong>Observability</strong> menjamin bahwa sistem tidak hanya berfungsi (*functional requirement*), tetapi juga tangguh, aman, dan mudah dipantau (*non-functional requirements*).
+    </p>
+
+</div>
+
+<!-- Modal Element -->
+<div id="diagramModal" class="diagram-modal">
+    <button class="close-btn" onclick="closeModal()" title="Tutup">&times;</button>
+    <div class="modal-content" id="modalContent">
+        <!-- SVG dari diagram Mermaid akan di-clone ke sini via JavaScript -->
+    </div>
+</div>
+
+<!-- Info Card Element -->
+<div id="infoCard" class="info-card">
+    <button class="close-info" onclick="closeInfoCard()" title="Tutup info">&times;</button>
+    <h3 id="infoTitle">Nama Komponen</h3>
+    <p id="infoDesc">Deskripsi komponen akan muncul di sini.</p>
+</div>
+
+<script type="module">
+    import mermaid from 'https://cdn.jsdelivr.net/npm/mermaid@10/dist/mermaid.esm.min.mjs';
+    mermaid.initialize({ 
+        startOnLoad: true, 
+        securityLevel: 'loose',
+        fontFamily: 'Inter, sans-serif'
+    });
+</script>
+
+<script>
+    // Fungsi untuk membuka modal dan meng-copy SVG diagram
+    function openModal() {
+        const modal = document.getElementById('diagramModal');
+        const modalContent = document.getElementById('modalContent');
+        const svg = document.querySelector('#mainMermaid svg');
+        
+        if (svg) {
+            // Kosongkan isi modal sebelumnya
+            modalContent.innerHTML = '';
+            
+            // Kloning diagram SVG
+            const clonedSvg = svg.cloneNode(true);
+            modalContent.appendChild(clonedSvg);
+            
+            // Tampilkan modal & hentikan scroll pada background
+            modal.classList.add('active');
+            document.body.style.overflow = 'hidden';
+        } else {
+            alert('Diagram sedang dimuat, mohon tunggu sebentar...');
+        }
+    }
+
+    // Fungsi untuk menutup modal
+    function closeModal() {
+        const modal = document.getElementById('diagramModal');
+        modal.classList.remove('active');
+        document.body.style.overflow = 'auto';
+    }
+    
+    // Fitur tambahan: Menutup modal dengan tombol 'Escape' di keyboard
+    document.addEventListener('keydown', function(event) {
+        if (event.key === "Escape") {
+            closeModal();
+        }
+    });
+
+    // Fitur tambahan: Menutup modal jika klik area luar (background)
+    document.getElementById('diagramModal').addEventListener('click', function(event) {
+        if (event.target === this) {
+            closeModal();
+        }
+    });
+
+    // --- FITUR KLIK NODE (INFO CARD) ---
+    const nodeData = {
+        "User": { title: "👤 User (Client)", desc: "Pengguna akhir (pelanggan) yang mengakses dashboard hPanel melalui web browser." },
+        "Admin": { title: "🛠️ Admin (Engineer)", desc: "Tim SRE/Engineer Hostinger yang memantau performa server dan menerima notifikasi jika terjadi gangguan." },
+        "Dev": { title: "💻 Developer", desc: "Tim pengembang perangkat lunak yang menulis, menguji, dan merilis fitur baru untuk hPanel." },
+        "DNS": { title: "🌐 DNS Management", desc: "Sistem Domain Name Server (seperti Cloudflare/Route53) yang menerjemahkan nama domain menjadi alamat IP." },
+        "WAF": { title: "🛡️ WAF & CDN", desc: "Web Application Firewall yang memblokir serangan siber (DDoS, SQLi) serta CDN untuk mempercepat waktu muat website." },
+        "LB": { title: "⚖️ Load Balancer", desc: "Mendistribusikan ribuan request yang masuk secara merata ke berbagai server backend agar tidak ada yang kelebihan beban." },
+        "Gateway": { title: "🚪 API Gateway", desc: "Pintu gerbang utama yang memvalidasi sesi login (Auth) dan membatasi jumlah request (Rate Limiting) untuk mencegah spam." },
+        "UI": { title: "🖥️ hPanel Frontend", desc: "Antarmuka grafis interaktif yang dilihat pengguna, dibangun menggunakan kerangka kerja modern seperti React atau Vue.js." },
+        "API": { title: "⚙️ Core Backend API", desc: "Otak dari hPanel (Microservices) yang memproses seluruh logika bisnis, seperti memvalidasi data dan manajemen akun." },
+        "Search": { title: "🔍 Search Engine", desc: "Mesin pencari khusus (Elasticsearch). Sangat cepat dalam mencari nama domain spesifik dari jutaan daftar yang ada." },
+        "Scheduler": { title: "⏱️ Cron Scheduler", desc: "Penjadwal tugas otomatis (Apache Airflow/Cron). Contoh: mengirimkan tagihan secara otomatis setiap awal bulan." },
+        "TaskBroker": { title: "📨 Task Broker", desc: "Antrean pesan (RabbitMQ) untuk menampung perintah-perintah berat agar API bisa langsung merespons pengguna tanpa menunggu proses selesai." },
+        "Workers": { title: "👷 Background Workers", desc: "Pekerja di latar belakang (Sidekiq/Celery) yang mengeksekusi tugas berat antrean, seperti menginstal CMS atau mengekstrak file ZIP." },
+        "RDBMS": { title: "🗄️ Primary RDBMS", desc: "Database utama (PostgreSQL/MariaDB) yang menyimpan data absolut sistem seperti saldo tagihan, profil pengguna, dan transaksi." },
+        "Cache": { title: "⚡ In-Memory Cache", desc: "Penyimpanan sementara super cepat (Redis) untuk menyimpan sesi login agar waktu muat (load time) lebih optimal." },
+        "CephFS": { title: "📁 Distributed FS (CephFS)", desc: "Sistem penyimpanan berskala raksasa (Exabyte) tempat file-file website pelanggan disimpan secara fisik dan aman." },
+        "LVE": { title: "📦 CloudLinux LVE", desc: "Lingkungan virtual terisolasi yang memastikan satu website pelanggan tidak bisa mencuri jatah RAM/CPU dari pelanggan lainnya." },
+        "ColdStorage": { title: "❄️ Cold Storage", desc: "Penyimpanan jangka panjang (Amazon S3) yang berbiaya murah, khusus untuk menyimpan arsip file backup mingguan/harian." },
+        "EventStream": { title: "🌊 Event Stream", desc: "Jalur pipa data (Apache Kafka) yang mampu menelan jutaan baris log dan event metrik server setiap detiknya tanpa lag." },
+        "CDC": { title: "🔄 Change Data Capture", desc: "Sistem (Debezium) yang secara diam-diam memantau perubahan data di Database Utama, lalu mengalirkan perubahannya ke Kafka." },
+        "OLAP": { title: "📊 Real-time OLAP", desc: "Database analitik (ClickHouse) yang memproses miliaran baris log dalam hitungan detik untuk keperluan pemuatan grafik dashboard." },
+        "DBT": { title: "🧹 Data Transformation", desc: "Alat rekayasa data (dbt) untuk merapikan, memformat, dan membersihkan data mentah sebelum dimasukkan ke dalam Gudang Data utama." },
+        "DWH": { title: "🏛️ Data Warehouse", desc: "Gudang Data Skala Petabyte (Google BigQuery) tempat seluruh data perusahaan dikumpulkan untuk analisis bisnis strategis (BI)." },
+        "Logging": { title: "📝 Centralized Logging", desc: "Pusat penampungan log teks (ELK Stack). Memungkinkan teknisi mencari pesan error kode aplikasi dengan mudah lewat keyword." },
+        "Metrics": { title: "📈 Metrics & Traces", desc: "Sistem pemantau angka (Prometheus), misalnya mendata persentase CPU, yang kemudian divisualisasikan jadi grafik (Grafana)." },
+        "Alerts": { title: "🚨 Alerting System", desc: "Sistem notifikasi darurat otomatis (PagerDuty). Segera mengirim alarm ke grup Slack jika mendeteksi anomali kritis." },
+        "GitLab": { title: "🤖 GitLab CI/CD", desc: "Robot otomatisasi yang menguji kode baru buatan Developer. Jika lolos uji, kode dikemas dan disiapkan untuk di-deploy ke server." },
+        "K8s": { title: "☸️ Kubernetes", desc: "Manajer server canggih yang memastikan container API dan Worker selalu menyala. Jika satu mati, K8s akan langsung merestartnya." }
+    };
+
+    const textMatcher = [
+        { match: "Client", id: "User" },
+        { match: "Engineer", id: "Admin" },
+        { match: "Developer", id: "Dev" },
+        { match: "DNS", id: "DNS" },
+        { match: "WAF", id: "WAF" },
+        { match: "Load Balancer", id: "LB" },
+        { match: "Gateway", id: "Gateway" },
+        { match: "Frontend", id: "UI" },
+        { match: "Backend API", id: "API" },
+        { match: "Search Engine", id: "Search" },
+        { match: "Cron", id: "Scheduler" },
+        { match: "Task Broker", id: "TaskBroker" },
+        { match: "Background Workers", id: "Workers" },
+        { match: "Primary DB", id: "RDBMS" },
+        { match: "Cache", id: "Cache" },
+        { match: "CephFS", id: "CephFS" },
+        { match: "LVE", id: "LVE" },
+        { match: "Cold Storage", id: "ColdStorage" },
+        { match: "Event Stream", id: "EventStream" },
+        { match: "Capture", id: "CDC" },
+        { match: "OLAP", id: "OLAP" },
+        { match: "Transformation", id: "DBT" },
+        { match: "Data Warehouse", id: "DWH" },
+        { match: "Logging", id: "Logging" },
+        { match: "Metrics", id: "Metrics" },
+        { match: "Alerting", id: "Alerts" },
+        { match: "GitLab", id: "GitLab" },
+        { match: "Kubernetes", id: "K8s" }
+    ];
+
+    window.showInfoCard = function(nodeId) {
+        const data = nodeData[nodeId];
+        if(data) {
+            document.getElementById('infoTitle').innerText = data.title;
+            document.getElementById('infoDesc').innerText = data.desc;
+            document.getElementById('infoCard').classList.add('show');
+        }
+    };
+
+    window.closeInfoCard = function() {
+        document.getElementById('infoCard').classList.remove('show');
+    };
+
+    // Event listener global untuk SVG Mermaid (asli & modal fullscreen)
+    document.addEventListener('click', function(e) {
+        const node = e.target.closest('.node');
+        if (node) {
+            const textContent = node.textContent || '';
+            for(let item of textMatcher) {
+                if (textContent.includes(item.match)) {
+                    showInfoCard(item.id);
+                    break;
+                }
+            }
+        } else if (!e.target.closest('.info-card') && !e.target.closest('.zoom-btn')) {
+            // Tutup card jika klik di sembarang tempat selain node, tombol zoom, atau card itu sendiri
+            closeInfoCard();
+        }
+    });
+</script>
+
+</body>
+</html>
