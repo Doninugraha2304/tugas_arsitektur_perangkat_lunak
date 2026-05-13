@@ -345,6 +345,34 @@
             stroke-width: 3px !important;
             filter: drop-shadow(0 4px 6px rgba(0,0,0,0.1));
         }
+
+        /* Mobile Responsiveness (Flat UI) */
+        @media (max-width: 768px) {
+            .document-container {
+                margin: 15px auto;
+                padding: 25px 20px;
+                border-top-width: 6px;
+                width: 95%;
+                box-sizing: border-box;
+            }
+            .header {
+                flex-direction: column;
+                gap: 20px;
+            }
+            .document-control {
+                width: 100%;
+                box-sizing: border-box;
+            }
+            .toc-list li {
+                flex: 1 1 100%;
+            }
+            h2 { font-size: 20px; }
+            .header-title h1 { font-size: 24px; }
+            .info-card { width: 92%; padding: 20px; }
+            .mermaid-container { padding: 15px; margin: 20px 0; }
+            .zoom-btn { top: 10px; right: 10px; padding: 6px 12px; font-size: 12px; }
+            table.formal-table th, table.formal-table td { padding: 10px; font-size: 13px; }
+        }
     </style>
 </head>
 <body>
@@ -372,7 +400,9 @@
             <li><a href="#summary">1. Executive Summary</a></li>
             <li><a href="#diagram">2. System Architecture Diagram</a></li>
             <li><a href="#components">3. Architecture Component Definition</a></li>
-            <li><a href="#principles">4. Design Principles & Justification</a></li>
+            <li><a href="#polyglot">4. Pemilihan Database (Polyglot Persistence)</a></li>
+            <li><a href="#dataflow">5. Alur Data (Data Flow Pipeline)</a></li>
+            <li><a href="#principles">6. Design Principles & Justification</a></li>
         </ul>
     </div>
 
@@ -566,7 +596,63 @@
         </table>
     </div>
 
-    <h2>4. Design Principles & Justification</h2>
+    <h2 id="polyglot">4. Pemilihan Database (Polyglot Persistence)</h2>
+    <p>
+        Dalam menangani jutaan pengguna, arsitektur ini tidak mengandalkan satu jenis database tunggal. Sistem mengadopsi pendekatan <strong>Polyglot Persistence</strong> (satu tugas spesifik menggunakan jenis database yang paling optimal). Berikut adalah rincian jenis database dan alasan pemilihannya:
+    </p>
+    <div class="table-responsive">
+        <table class="formal-table">
+            <thead>
+                <tr>
+                    <th>Jenis Database</th>
+                    <th>Teknologi</th>
+                    <th>Alasan Pemilihan & Kegunaan</th>
+                </tr>
+            </thead>
+            <tbody>
+                <tr>
+                    <td><strong>Relational (RDBMS)</strong></td>
+                    <td>PostgreSQL / MariaDB</td>
+                    <td>Digunakan sebagai <em>Source of Truth</em>. Terpilih karena kepatuhan ACID yang menjamin konsistensi data absolut untuk transaksi pembayaran, pengaturan akun, dan konfigurasi kritis server pengguna.</td>
+                </tr>
+                <tr>
+                    <td><strong>In-Memory Cache</strong></td>
+                    <td>Redis</td>
+                    <td>Terpilih karena kecepatan aksesnya yang berbasis RAM (latensi sub-milidetik). Sangat vital untuk menyimpan sesi login pengguna dan <em>caching</em> halaman UI, mereduksi beban kueri berulang ke RDBMS secara drastis.</td>
+                </tr>
+                <tr>
+                    <td><strong>Columnar OLAP</strong></td>
+                    <td>ClickHouse</td>
+                    <td>Terpilih karena kemampuannya menelan (ingest) data dengan <em>throughput</em> ekstrem. Strukturnya yang berbasis kolom sangat optimal untuk kueri analitik dan agregasi log metrik server pelanggan secara <em>real-time</em>.</td>
+                </tr>
+                <tr>
+                    <td><strong>Search Engine</strong></td>
+                    <td>Elasticsearch</td>
+                    <td>Terpilih untuk pencarian teks penuh (Full-Text Search). Memungkinkan fitur pencarian instan pada miliaran baris data, seperti ketersediaan nama domain atau pencarian artikel bantuan, yang akan sangat memberatkan RDBMS.</td>
+                </tr>
+                <tr>
+                    <td><strong>Enterprise DWH</strong></td>
+                    <td>Google BigQuery</td>
+                    <td>Gudang data terkelola (Data Warehouse) yang masif. Terpilih karena skalabilitas tak terbatas dan integrasi BI yang kuat untuk pelaporan historis perusahaan (revenue, statistik pengguna) oleh tim Data.</td>
+                </tr>
+            </tbody>
+        </table>
+    </div>
+
+    <h2 id="dataflow">5. Alur Data (Data Flow Pipeline)</h2>
+    <p>
+        Aliran data dirancang dengan pemisahan tegas antara tugas antarmuka pengguna yang cepat (sinkron) dan pemrosesan berat di latar belakang (asinkron). Berikut alur dari awal hingga penyajian:
+    </p>
+    <div class="architecture-notes">
+        <ul style="color: #475569; padding-left: 20px; line-height: 1.8; margin-top: 5px; margin-bottom: 5px;">
+            <li><strong>📥 Ingestion (Pengumpulan):</strong> Dimulai saat klien mengeklik tombol di UI hPanel. API Gateway menerima <em>request</em>. Secara paralel di belakang layar, sistem CDC (seperti Debezium) mendeteksi perubahan baris data di PostgreSQL dan mengirimkannya sebagai "Event", sementara pelacak *event* mengirim log aktivitas klik ke Kafka.</li>
+            <li><strong>⚙️ Processing (Pemrosesan):</strong> Permintaan berat (misal: "Instal WordPress") tidak langsung dikerjakan API, melainkan dilempar sebagai tiket ke <em>Message Broker</em> (RabbitMQ). Para <em>Background Workers</em> akan mengantre mengambil tugas itu. Untuk data analitik, <em>Event Stream</em> Kafka diolah dan dibersihkan bentuknya oleh <em>dbt (Data Build Tool)</em>.</li>
+            <li><strong>🗄️ Storage (Penyimpanan):</strong> Hasil kerja Worker akan ditulis ke tempat asalnya: file fisik ke <strong>CephFS</strong>, konfigurasi server ke <strong>CloudLinux LVE</strong>, dan perubahan status ke <strong>RDBMS</strong>. Log analitik yang sudah rapi disimpan permanen di dalam <strong>BigQuery</strong>.</li>
+            <li><strong>📊 Serving (Penyajian):</strong> Data ditarik kembali untuk disajikan secara cepat. <em>Dashboard</em> pelanggan mengambil metrik <em>live</em> dari <strong>Redis</strong> dan <strong>ClickHouse</strong>. Laporan analitik bisnis internal ditarik dari BigQuery untuk ditampilkan di platform <em>Business Intelligence</em>.</li>
+        </ul>
+    </div>
+
+    <h2 id="principles">6. Design Principles & Justification</h2>
     <p>
         Desain ini menganut prinsip <strong>Decoupled Architecture</strong> dan <strong>Polyglot Persistence</strong>. Kelemahan pada arsitektur sebelumnya (Single Point of Failure pada Message Broker) telah diselesaikan dengan memisahkan *Task Broker* (RabbitMQ) untuk operasional dan *Event Stream* (Kafka) untuk analitik. Penambahan blok <strong>Infrastructure (CephFS/LVE)</strong> merefleksikan realitas operasional perusahaan web hosting. Selain itu, lapisan <strong>Security</strong> dan <strong>Observability</strong> menjamin bahwa sistem tidak hanya berfungsi (*functional requirement*), tetapi juga tangguh, aman, dan mudah dipantau (*non-functional requirements*).
     </p>
